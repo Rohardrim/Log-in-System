@@ -6,26 +6,32 @@ import java.awt.Graphics;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 
 
 
-public class Main extends JFrame implements ActionListener{
+public class Main extends JFrame implements ActionListener, KeyListener{
 	
 	private TextField t1;
 	private JButton b1, b2;
 	private JLabel e1, log, pass;
 	private JPasswordField t2;
-	
+
 	List<User> l = new LinkedList<>();
 	
 	static Main m = new Main();
@@ -47,6 +53,7 @@ public class Main extends JFrame implements ActionListener{
 		
 		t2 = new JPasswordField();
 		t2.setBounds(150, 190, 200, 30);
+		t2.addKeyListener(this);
 		add(t2);
 		
 		b1 = new JButton("Zaloguj");
@@ -70,6 +77,8 @@ public class Main extends JFrame implements ActionListener{
 		pass = new JLabel("Password:");
 		pass.setBounds(67, 190, 70, 30);
 		add(pass);
+		
+		addKeyListener(this);
 	}
 
 	public void paint(Graphics g) {
@@ -88,82 +97,122 @@ public class Main extends JFrame implements ActionListener{
 		// TODO Auto-generated method stub
 		
 		Object s = e.getSource();
-		
-		
-		if(s == b1){
-			
-			if(t1.getText().length() > 0 && t2.getPassword().length > 0){
-				
-				
-				char[] c;
-			    c = t2.getPassword();
-				
-				String hash = "";
-				
-				for(int i=0; i<t2.getPassword().length; i++)
-					hash += c[i];
-				
-				for(User p : l){
-					
-				if(t1.getText().equals(p.getNickname()) && hash.equals(p.getPassword())){
-					
-				User u = new User(p.getNickname(), p.getID());
-				
-				if(u.isShowing())
-					 m.setVisible(false);
-		
-					
-				e1.setVisible(false);
-				}
-				else
-				     e1.setText("User nie istnieje");
-			  }
-				
-			}
-			else
-		       e1.setText("Zbyt krotki login lub haslo");		
-	}
+		 
+		if(s == b1)
+			zaloguj();
+
 		
 		if(s == b2)
 			this.dispose();
 	}
+	
+	
+
+	@Override
+	public void keyTyped(KeyEvent e) {}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER)
+		zaloguj();
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {}
+	
+	public void zaloguj(){
+		
+		if(t1.getText().length() > 0 && t2.getPassword().length > 0){
+			
+			
+			char[] c;
+		    c = t2.getPassword();
+			
+			String hash = "";
+			
+			for(int i=0; i<t2.getPassword().length; i++)
+				hash += c[i];
+			
+			for(User p : l){
+				
+			if(t1.getText().equals(p.getNickname()) && hash.equals(p.getPassword()) && (p.getIsadm() == 0)){
+				
+			User u = new User(p.getNickname(), p.getID(), p.getIsadm());
+			
+			if(u.isShowing())
+				 m.setVisible(false);
+	
+				
+			e1.setVisible(false);
+			
+			}
+			else if(t1.getText().equals(p.getNickname()) && hash.equals(p.getPassword()) && (p.getIsadm() == 1)){
+				
+			User u = new User(p.getNickname(), p.getID(), p.getIsadm());
+			
+			if(u.isShowing())
+				 m.setVisible(false);
+	
+				
+			e1.setVisible(false);
+			}
+			else{
+				e1.setVisible(true);
+			     e1.setText("User nie istnieje");
+			}
+		  }
+			
+		}
+		else
+	       e1.setText("Zbyt krotki login lub haslo");	
+		
+	}
 
 	public void ustawUserow(){
 		
-		User kam = new User(1, "us1", "qw");
-		User gra = new User(2, "us2", "qw");
-		User pio = new User(3, "us3", "qw");
+		User kam = new User(1, "us1", "qw", 0);
+		User gra = new User(2, "us2", "qw", 0);
+		User pio = new User(3, "us3", "qw", 0);
+		User adm1 = new User(4, "adm1", "qw", 1);
+		
 		
 		l.add(kam);
 		l.add(gra);
 		l.add(pio);
+		l.add(adm1);
 		
 	}
 	
 	class User extends JFrame implements ActionListener{
 
-		private int id;
+		private int id, isadm, is2;
 		private String nickname, password;
 		private boolean f = false;
 		private JLabel et1;
-		private JButton b1, b2;
-		private int IdenUser;
+		private JButton b1, b2, ad;
 		private JMenuItem opis, profil;
+		private JComboBox<String> cb;
+		private JTextField log, hass;
 		
-		public User(String user, int iden){
-			
-			IdenUser = iden;
+		public User(String user, int iden, int adm){
 			
 			setSize(500, 500);
 			setVisible(true);
 			setLocation(600, 160);
+			
+			if(adm == 0)
 			setTitle("Asura Martial Wars");
+			else
+			setTitle("AdminPanel");
+			
 			setResizable(false);
 			
 			setLayout(null);
 			
 			et1 = new JLabel("Witaj uzytkowniku "+ user + "!");
-			et1.setBounds(150, 150, 160, 30);
+			et1.setBounds(50, 50, 160, 30);
 			add(et1);
 			
 			b1 = new JButton("Close");
@@ -195,9 +244,35 @@ public class Main extends JFrame implements ActionListener{
 			opis.addActionListener(this);
 			m.add(opis);
 			
+			
+			
+			if(adm == 1){
+				
+				log = new JTextField();
+				log.setBounds(250, 100, 120, 30);
+				add(log);
+				
+				hass = new JTextField();
+				hass.setBounds(250, 130, 120, 30);
+				add(hass);
+				
+				ad = new JButton("Add");
+				ad.setBounds(380, 100, 60, 20);
+				ad.addActionListener(this);
+				add(ad);
+				
+				cb = new JComboBox<>();
+				cb.setBounds(250, 170, 100, 20);
+				cb.addItem("Admin");
+				cb.addItem("User");
+				cb.addItem("Head");
+				cb.addActionListener(this);
+				add(cb);
+				
+			}
+			
 		}
 
-		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -222,6 +297,10 @@ public class Main extends JFrame implements ActionListener{
 				et1.setVisible(false);
 				b1.setVisible(false);
 				b2.setVisible(true);
+				log.setVisible(false);
+				hass.setVisible(false);
+				cb.setVisible(false);
+				ad.setVisible(false);
 				repaint();
 			}
 			else if(s == b2){
@@ -229,12 +308,64 @@ public class Main extends JFrame implements ActionListener{
 				et1.setVisible(true);
 				b1.setVisible(true);
 				b2.setVisible(false);
+				log.setVisible(true);
+				hass.setVisible(true);
+				cb.setVisible(true);
+				ad.setVisible(true);
 				f = false;
 				repaint();
 	
 			}
-			
+			else if(s == cb){
+				
+				String nam = cb.getSelectedItem().toString();
+				
+				if(nam.equals("Admin"))
+				  is2 = 1;
+				if(nam.equals("User"))
+					is2 = 0;
+				if(nam.equals("Head"))
+					   System.out.println("he");
+			}
+			else if(s == ad){                               //Dynamic adding user
+				
+				String login = log.getText();
+				boolean isuser = false;
+				
+				for(int i=0; i<l.size(); i++){
+					
+					if(login.equals(l.get(i).getNickname())){
+						isuser = true;
+						break;
+					}
+					else
+						isuser = false;
+				}
+
+				if(!isuser){
+				
+					if(log.getText().length() > 0 && hass.getText().length() > 0){
+						
+						int c = 0;
+						for(int i=0; i<l.size(); i++)
+							c++;
+							
+						
+						String p1,p2;
+						
+						p1 = log.getText();
+						p2 = hass.getText();
+						
+						User u1 = new User(c++, p1, p2, is2); 
+						l.add(u1);
+						JOptionPane.showMessageDialog(null, "The user is added");
+					}
+				}	
+				else
+					JOptionPane.showMessageDialog(null, "The user name is taken");
+			}
 		}
+		
 		
 		public void paint(Graphics g){
 			
@@ -244,15 +375,13 @@ public class Main extends JFrame implements ActionListener{
 			g.drawLine(10, 100, 450, 100);
 			g.drawLine(10, 200, 450, 200);
 			}
-			
-			
-
 		}
 		
-		public User(int id, String nickname, String password){
+		public User(int id, String nickname, String password, int isadm){
 			this.id = id;
 			this.nickname = nickname;
 			this.password = password;
+			this.isadm = isadm;
 		}
 		
 		public int getID(){
@@ -267,7 +396,11 @@ public class Main extends JFrame implements ActionListener{
 			return password;
 		}
 		
+		public int getIsadm(){
+			return isadm;
+		}	
 	}
+	
 
 	public static void main(String[] args) {
 		
@@ -275,7 +408,6 @@ public class Main extends JFrame implements ActionListener{
 		m.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		m.setVisible(true);
 		m.ustawUserow();
-		
 	
 	}
 
